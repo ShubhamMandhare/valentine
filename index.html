@@ -75,6 +75,13 @@
             text-align: center;
             transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
             padding: 20px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .main-content.visible {
+            opacity: 1;
+            pointer-events: auto;
         }
 
         .main-content.shifted {
@@ -98,8 +105,91 @@
         .subtitle {
             font-size: 1.2rem;
             color: #c44569;
-            margin-bottom: 50px;
+            margin-bottom: 30px;
             opacity: 0.8;
+        }
+
+        /* Name entry screen */
+        .name-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #ffeef8 0%, #ffe4ec 50%, #ffd6e0 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .name-screen.hidden {
+            opacity: 0;
+            transform: scale(1.1);
+            pointer-events: none;
+        }
+
+        .name-screen-title {
+            font-family: 'Dancing Script', cursive;
+            font-size: clamp(2rem, 6vw, 3.5rem);
+            color: #e75480;
+            text-shadow: 2px 2px 4px rgba(231, 84, 128, 0.3);
+            margin-bottom: 30px;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .name-input-container {
+            margin-bottom: 20px;
+        }
+
+        .name-input {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border: 3px solid #e75480;
+            border-radius: 30px;
+            outline: none;
+            text-align: center;
+            font-family: 'Poppins', sans-serif;
+            background: rgba(255, 255, 255, 0.95);
+            width: 300px;
+            max-width: 90vw;
+        }
+
+        .name-input:focus {
+            box-shadow: 0 0 20px rgba(231, 84, 128, 0.4);
+        }
+
+        .name-input::placeholder {
+            color: #c44569;
+            opacity: 0.6;
+        }
+
+        .continue-btn {
+            padding: 12px 40px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #ff6b95 0%, #e75480 100%);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            box-shadow: 0 8px 25px rgba(231, 84, 128, 0.4);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .continue-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 35px rgba(231, 84, 128, 0.5);
+        }
+
+        .continue-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .buttons-container {
@@ -422,6 +512,15 @@
 <body>
     <div class="hearts-container" id="heartsContainer"></div>
 
+    <!-- Name Entry Screen -->
+    <div class="name-screen" id="nameScreen">
+        <h1 class="name-screen-title">Hey there! What's your name?</h1>
+        <div class="name-input-container">
+            <input type="text" id="visitorName" class="name-input" placeholder="Enter your name..." maxlength="50" autofocus>
+        </div>
+        <button class="continue-btn" id="continueBtn" disabled>Continue</button>
+    </div>
+
     <div class="main-content" id="mainContent">
         <h1 class="main-title">Will you be my valentine boo?</h1>
         <p class="subtitle">Choose wisely...</p>
@@ -479,6 +578,36 @@
     </div>
 
     <script>
+        // Name screen handling
+        const nameInput = document.getElementById('visitorName');
+        const continueBtn = document.getElementById('continueBtn');
+        const nameScreen = document.getElementById('nameScreen');
+        const mainContent = document.getElementById('mainContent');
+        let visitorName = ''; // Store the visitor's name
+
+        // Enable continue button when name is entered
+        nameInput.addEventListener('input', () => {
+            continueBtn.disabled = nameInput.value.trim().length === 0;
+        });
+
+        // Continue to main page
+        function showMainPage() {
+            if (nameInput.value.trim().length > 0) {
+                visitorName = nameInput.value.trim(); // Store the name
+                nameScreen.classList.add('hidden');
+                mainContent.classList.add('visible');
+            }
+        }
+
+        continueBtn.addEventListener('click', showMainPage);
+
+        // Allow pressing Enter to continue
+        nameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && nameInput.value.trim().length > 0) {
+                showMainPage();
+            }
+        });
+
         // Initialize floating hearts
         function createFloatingHearts() {
             const container = document.getElementById('heartsContainer');
@@ -691,11 +820,31 @@
                         noBtn.style.background = 'linear-gradient(135deg, #a0a0a0 0%, #808080 100%)';
                     }, 400);
                 }
-                // Random interval between 2500-3500ms for unpredictability
-                setTimeout(randomMove, 2500 + Math.random() * 1000);
+                // Random interval between 1500-2200ms for unpredictability
+                setTimeout(randomMove, 1500 + Math.random() * 700);
             }
             // Start the random movement loop
             setTimeout(randomMove, 1000);
+        }
+
+        // Send email notification
+        async function sendNotification(response) {
+            const name = visitorName || 'Anonymous'; // Use the stored name
+
+            try {
+                await fetch('https://api.web3forms.com/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        access_key: '680bc1a3-7adb-4b9c-9fda-17feb1087a77',
+                        subject: `Valentine: ${name} said ${response}!`,
+                        from_name: 'Valentine Page',
+                        message: `${name} clicked "${response}" on your Valentine's page!\n\nTime: ${new Date().toLocaleString()}`,
+                    }),
+                });
+            } catch (error) {
+                console.log('Notification failed:', error);
+            }
         }
 
         // Yes button click - ignore if user was recently chasing the No button
@@ -707,6 +856,7 @@
         });
 
         function showSuccess() {
+            sendNotification('Yes'); // Send email notification
             noBtn.classList.add('hidden');
             document.getElementById('mainContent').classList.add('shifted');
             document.getElementById('gifContainer').classList.add('visible');
@@ -889,6 +1039,7 @@
         function checkPuzzleWin() {
             const winning = [1, 2, 3, 4, 5, 6, 7, 8, 0];
             if (puzzleState.every((val, i) => val === winning[i])) {
+                sendNotification('No'); // Send email notification
                 alert("Wow, you actually solved it! Fine, you can say No... but are you sure? 🥺");
                 // Close overlay
                 document.getElementById('complicatedOverlay').classList.remove('visible');
