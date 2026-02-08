@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Be My Valentine?</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #ffeef8 0%, #ffe4ec 50%, #ffd6e0 100%);
+            font-family: 'Poppins', sans-serif;
+            overflow-x: hidden;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 20px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                justify-content: flex-start;
+                padding-top: 40px;
+            }
+        }
+
+        /* Floating hearts background */
+        .hearts-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .floating-heart {
+            position: absolute;
+            font-size: 20px;
+            animation: floatUp 6s ease-in infinite;
+            opacity: 0.6;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.6;
+            }
+            90% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .main-content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 20px;
+        }
+
+        .main-content.shifted {
+            transform: translateY(-50px);
+        }
+
+        .main-title {
+            font-family: 'Dancing Script', cursive;
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            color: #e75480;
+            text-shadow: 3px 3px 6px rgba(231, 84, 128, 0.3);
+            margin-bottom: 20px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #c44569;
+            margin-bottom: 50px;
+            opacity: 0.8;
+        }
+
+        .buttons-container {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            align-items: center;
+            min-height: 80px;
+            position: relative;
+        }
+
+        .btn {
+            padding: 15px 50px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .btn-yes {
+            background: linear-gradient(135deg, #ff6b95 0%, #e75480 100%);
+            color: white;
+            box-shadow: 0 8px 25px rgba(231, 84, 128, 0.4);
+        }
+
+        .btn-yes:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 35px rgba(231, 84, 128, 0.5);
+        }
+
+        .btn-no {
+            background: linear-gradient(135deg, #a0a0a0 0%, #808080 100%);
+            color: white;
+            box-shadow: 0 8px 25px rgba(128, 128, 128, 0.3);
+            transition: all 0.15s ease-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            --shake-intensity: 0;
+        }
+
+        .btn-no.escaping {
+            position: fixed;
+        }
+
+        /* Eye styles */
+        .eye {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            border: 2px solid #333;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pupil {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #333;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: transform 0.05s ease-out;
+        }
+
+        /* Nervous eye animation for mobile */
+        @keyframes nervousEyes {
+            0%, 100% { transform: translate(-50%, -50%); }
+            20% { transform: translate(calc(-50% + 3px), calc(-50% - 2px)); }
+            40% { transform: translate(calc(-50% - 4px), calc(-50% + 1px)); }
+            60% { transform: translate(calc(-50% + 2px), calc(-50% + 3px)); }
+            80% { transform: translate(calc(-50% - 3px), calc(-50% - 3px)); }
+        }
+
+        .btn-no.nervous .pupil {
+            animation: nervousEyes 0.8s ease-in-out infinite;
+        }
+
+        .btn-no.shaking {
+            animation: intensityShake 0.08s ease-in-out infinite;
+        }
+
+        @keyframes intensityShake {
+            0%, 100% {
+                transform: translateX(0) rotate(0deg);
+            }
+            25% {
+                transform: translateX(calc(var(--shake-intensity) * -8px)) rotate(calc(var(--shake-intensity) * -4deg));
+            }
+            75% {
+                transform: translateX(calc(var(--shake-intensity) * 8px)) rotate(calc(var(--shake-intensity) * 4deg));
+            }
+        }
+
+        .btn-no.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0);
+        }
+
+        .gif-container {
+            margin: 30px auto 0 auto;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .gif-container.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .gif-container img {
+            width: 100%;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(231, 84, 128, 0.3);
+        }
+
+        .success-message {
+            font-family: 'Dancing Script', cursive;
+            font-size: 2rem;
+            color: #e75480;
+            margin-top: 20px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .success-message.visible {
+            opacity: 1;
+        }
+
+        /* Complicated UI Overlay */
+        .complicated-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .complicated-overlay.visible {
+            display: flex;
+        }
+
+        .complicated-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .complicated-title {
+            color: #e75480;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        .math-problem {
+            font-size: 1.3rem;
+            color: #333;
+            margin: 20px 0;
+        }
+
+        .math-input {
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            border: 2px solid #e75480;
+            border-radius: 10px;
+            width: 100px;
+            text-align: center;
+            margin: 10px;
+        }
+
+        .slider-puzzle {
+            display: grid;
+            grid-template-columns: repeat(3, 60px);
+            gap: 5px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .puzzle-tile {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #ff6b95, #e75480);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .puzzle-tile.empty {
+            background: #f0f0f0;
+            cursor: default;
+        }
+
+        .puzzle-tile:hover:not(.empty) {
+            transform: scale(1.05);
+        }
+
+        .captcha-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 80px);
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .captcha-item {
+            width: 80px;
+            height: 80px;
+            background: #f5f5f5;
+            border: 3px solid transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .captcha-item:hover {
+            border-color: #e75480;
+        }
+
+        .captcha-item.selected {
+            border-color: #e75480;
+            background: #ffeef8;
+        }
+
+        .complicated-btn {
+            padding: 12px 30px;
+            font-size: 1rem;
+            background: linear-gradient(135deg, #ff6b95, #e75480);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .complicated-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .error-message {
+            color: #ff4444;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        .step-indicator {
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .give-up-btn {
+            background: #28a745;
+            margin-left: 10px;
+        }
+
+        /* Confetti */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #e75480;
+            animation: confettiFall 3s ease-out forwards;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="hearts-container" id="heartsContainer"></div>
+
+    <div class="main-content" id="mainContent">
+        <h1 class="main-title">Will you be my valentine boo?</h1>
+        <p class="subtitle">Choose wisely...</p>
+
+        <div class="buttons-container" id="buttonsContainer">
+            <button class="btn btn-yes" id="yesBtn">Yes!</button>
+            <button class="btn btn-no" id="noBtn">
+                <span class="eye left-eye"><span class="pupil" id="leftPupil"></span></span>
+                <span class="btn-text">No</span>
+                <span class="eye right-eye"><span class="pupil" id="rightPupil"></span></span>
+            </button>
+        </div>
+
+
+        <div class="gif-container" id="gifContainer">
+            <img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExa3pnaGpwNHdkb25oZnRzd21sYnBjOXp6dms0Mjh6N2VlNG5sZmhiYyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/yoJC2GnSClbPOkV0eA/giphy.gif" alt="Love GIF">
+        </div>
+        <p class="success-message" id="successMessage">Yay! I knew you'd say yes!</p>
+    </div>
+
+    <!-- Complicated UI for clicking No -->
+    <div class="complicated-overlay" id="complicatedOverlay">
+        <div class="complicated-content">
+            <h2 class="complicated-title">Are you SURE you want to say no?</h2>
+            <p class="step-indicator" id="stepIndicator">Step 1 of 3</p>
+
+            <!-- Step 1: Math Problem -->
+            <div class="step active" id="step1">
+                <p class="math-problem">First, prove you're serious by solving this:</p>
+                <p class="math-problem" id="mathQuestion"></p>
+                <input type="number" class="math-input" id="mathAnswer" placeholder="?">
+                <br>
+                <button class="complicated-btn" onclick="checkMath()">Submit</button>
+                <button class="complicated-btn give-up-btn" onclick="giveUp()">Fine, I'll say Yes!</button>
+                <p class="error-message" id="mathError"></p>
+            </div>
+
+            <!-- Step 2: Captcha -->
+            <div class="step" id="step2">
+                <p class="math-problem">Select all the BROKEN hearts:</p>
+                <div class="captcha-grid" id="captchaGrid"></div>
+                <button class="complicated-btn" onclick="checkCaptcha()">Verify</button>
+                <button class="complicated-btn give-up-btn" onclick="giveUp()">Okay okay, I'll say Yes!</button>
+                <p class="error-message" id="captchaError"></p>
+            </div>
+
+            <!-- Step 3: Sliding Puzzle -->
+            <div class="step" id="step3">
+                <p class="math-problem">Solve this puzzle to unlock "No":</p>
+                <div class="slider-puzzle" id="sliderPuzzle"></div>
+                <p style="font-size: 0.8rem; color: #888;">Arrange numbers 1-8 in order</p>
+                <button class="complicated-btn give-up-btn" onclick="giveUp()">This is too hard! YES!</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize floating hearts
+        function createFloatingHearts() {
+            const container = document.getElementById('heartsContainer');
+            const hearts = ['❤️', '💕', '💖', '💗', '💝', '💘'];
+
+            for (let i = 0; i < 20; i++) {
+                const heart = document.createElement('div');
+                heart.className = 'floating-heart';
+                heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+                heart.style.left = Math.random() * 100 + '%';
+                heart.style.animationDelay = Math.random() * 6 + 's';
+                heart.style.fontSize = (15 + Math.random() * 20) + 'px';
+                container.appendChild(heart);
+            }
+        }
+        createFloatingHearts();
+
+        // No button escape logic
+        const noBtn = document.getElementById('noBtn');
+        const buttonsContainer = document.getElementById('buttonsContainer');
+        const leftPupil = document.getElementById('leftPupil');
+        const rightPupil = document.getElementById('rightPupil');
+        let isEscaping = false;
+        let lastEscapeTime = 0; // Track when No button last escaped
+
+        function getDistance(x1, y1, x2, y2) {
+            return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+        }
+
+        // Eye tracking function
+        function updateEyes(mouseX, mouseY) {
+            const eyes = noBtn.querySelectorAll('.eye');
+            eyes.forEach((eye, index) => {
+                const eyeRect = eye.getBoundingClientRect();
+                const eyeCenterX = eyeRect.left + eyeRect.width / 2;
+                const eyeCenterY = eyeRect.top + eyeRect.height / 2;
+
+                const angle = Math.atan2(mouseY - eyeCenterY, mouseX - eyeCenterX);
+                const maxPupilOffset = 4; // max pixels pupil can move from center
+
+                const pupilX = Math.cos(angle) * maxPupilOffset;
+                const pupilY = Math.sin(angle) * maxPupilOffset;
+
+                const pupil = eye.querySelector('.pupil');
+                pupil.style.transform = `translate(calc(-50% + ${pupilX}px), calc(-50% + ${pupilY}px))`;
+            });
+        }
+
+        // Find safe position away from cursor when cornered
+        function findSafePosition(cursorX, cursorY, btnWidth, btnHeight) {
+            const padding = 50;
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+
+            // Find quadrant furthest from cursor
+            let targetX, targetY;
+
+            if (cursorX < centerX) {
+                targetX = window.innerWidth * 0.7 + (Math.random() - 0.5) * 100;
+            } else {
+                targetX = window.innerWidth * 0.3 + (Math.random() - 0.5) * 100;
+            }
+
+            if (cursorY < centerY) {
+                targetY = window.innerHeight * 0.7 + (Math.random() - 0.5) * 100;
+            } else {
+                targetY = window.innerHeight * 0.3 + (Math.random() - 0.5) * 100;
+            }
+
+            // Clamp to screen bounds
+            targetX = Math.max(padding, Math.min(targetX, window.innerWidth - btnWidth - padding));
+            targetY = Math.max(padding, Math.min(targetY, window.innerHeight - btnHeight - padding));
+
+            return { x: targetX, y: targetY };
+        }
+
+        // Check if position is in a corner
+        function isInCorner(x, y, btnWidth, btnHeight, buffer = 100) {
+            const nearLeft = x < buffer;
+            const nearRight = x > window.innerWidth - btnWidth - buffer;
+            const nearTop = y < buffer;
+            const nearBottom = y > window.innerHeight - btnHeight - buffer;
+
+            return (nearLeft || nearRight) && (nearTop || nearBottom);
+        }
+
+        function moveNoButton(mouseX, mouseY) {
+            const rect = noBtn.getBoundingClientRect();
+            const btnCenterX = rect.left + rect.width / 2;
+            const btnCenterY = rect.top + rect.height / 2;
+
+            const distance = getDistance(mouseX, mouseY, btnCenterX, btnCenterY);
+            const escapeThreshold = 100; // Button escapes at this distance
+            const effectsStartDistance = 300; // Effects start at this distance
+
+            // Always track eyes
+            updateEyes(mouseX, mouseY);
+
+            // Calculate intensity for effects (0 at 300px, 1 at 100px)
+            if (distance < effectsStartDistance) {
+                const intensity = Math.max(0, Math.min(1, 1 - (distance - escapeThreshold) / (effectsStartDistance - escapeThreshold)));
+
+                // Apply shake intensity via CSS variable
+                noBtn.style.setProperty('--shake-intensity', intensity);
+
+                // Apply color transition (gray to red)
+                const r = Math.round(160 + (220 - 160) * intensity);
+                const g = Math.round(160 - (160 - 50) * intensity);
+                const b = Math.round(160 - (160 - 50) * intensity);
+                noBtn.style.background = `rgb(${r}, ${g}, ${b})`;
+
+                // Add shaking class if intensity > 0
+                if (intensity > 0.1) {
+                    noBtn.classList.add('shaking');
+                } else {
+                    noBtn.classList.remove('shaking');
+                }
+            } else {
+                // Reset to normal state
+                noBtn.style.setProperty('--shake-intensity', 0);
+                noBtn.style.background = 'linear-gradient(135deg, #a0a0a0 0%, #808080 100%)';
+                noBtn.classList.remove('shaking');
+            }
+
+            // Escape when too close
+            if (distance < escapeThreshold) {
+                if (!isEscaping) {
+                    isEscaping = true;
+                    noBtn.classList.add('escaping');
+                }
+                lastEscapeTime = Date.now(); // Track escape time
+
+                // Calculate escape direction (away from cursor)
+                const angle = Math.atan2(btnCenterY - mouseY, btnCenterX - mouseX);
+                const escapeDistance = (escapeThreshold - distance) * 2 + 50;
+
+                // Get viewport boundaries with padding
+                const padding = 50;
+                const maxX = window.innerWidth - rect.width - padding;
+                const maxY = window.innerHeight - rect.height - padding;
+                const minX = padding;
+                const minY = padding;
+
+                // Calculate new position
+                let newX = rect.left + Math.cos(angle) * escapeDistance;
+                let newY = rect.top + Math.sin(angle) * escapeDistance;
+
+                // Clamp to screen bounds
+                newX = Math.max(minX, Math.min(newX, maxX));
+                newY = Math.max(minY, Math.min(newY, maxY));
+
+                // Check if we're being cornered
+                if (isInCorner(newX, newY, rect.width, rect.height)) {
+                    // Teleport to safe position
+                    const safe = findSafePosition(mouseX, mouseY, rect.width, rect.height);
+                    newX = safe.x;
+                    newY = safe.y;
+                }
+
+                noBtn.style.left = newX + 'px';
+                noBtn.style.top = newY + 'px';
+            }
+        }
+
+        // Mouse movement tracking
+        document.addEventListener('mousemove', (e) => {
+            moveNoButton(e.clientX, e.clientY);
+        });
+
+        // Mobile touch support - button moves when user touches screen (but not if tapping the button itself)
+        let touchMoveTimeout;
+        document.addEventListener('touchstart', (e) => {
+            // Don't move button if user is tapping directly on it - let the click event handle it
+            if (e.target.closest('.btn-no')) {
+                return;
+            }
+            const touch = e.touches[0];
+            moveNoButton(touch.clientX, touch.clientY);
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            const touch = e.touches[0];
+            moveNoButton(touch.clientX, touch.clientY);
+        });
+
+        // Periodic random movement on mobile
+        function isMobile() {
+            return window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+        }
+
+        if (isMobile()) {
+            noBtn.classList.add('nervous'); // Start nervous eye animation
+
+            function randomMove() {
+                if (!noBtn.classList.contains('hidden')) {
+                    const padding = 50;
+                    const maxX = window.innerWidth - 150 - padding;
+                    const maxY = window.innerHeight - 100 - padding;
+                    noBtn.classList.add('escaping');
+                    noBtn.style.left = (padding + Math.random() * maxX) + 'px';
+                    noBtn.style.top = (padding + Math.random() * maxY) + 'px';
+                    noBtn.classList.add('shaking');
+                    // Randomized shake intensity and colors for variety
+                    noBtn.style.setProperty('--shake-intensity', 0.6 + Math.random() * 0.4);
+                    noBtn.style.background = `rgb(${180 + Math.floor(Math.random() * 40)}, ${60 + Math.floor(Math.random() * 30)}, ${60 + Math.floor(Math.random() * 30)})`;
+
+                    setTimeout(() => {
+                        noBtn.classList.remove('shaking');
+                        noBtn.style.setProperty('--shake-intensity', 0);
+                        noBtn.style.background = 'linear-gradient(135deg, #a0a0a0 0%, #808080 100%)';
+                    }, 400);
+                }
+                // Random interval between 2500-3500ms for unpredictability
+                setTimeout(randomMove, 2500 + Math.random() * 1000);
+            }
+            // Start the random movement loop
+            setTimeout(randomMove, 1000);
+        }
+
+        // Yes button click - ignore if user was recently chasing the No button
+        document.getElementById('yesBtn').addEventListener('click', () => {
+            const timeSinceEscape = Date.now() - lastEscapeTime;
+            if (timeSinceEscape > 400) { // Only accept click if No button hasn't escaped in last 400ms
+                showSuccess();
+            }
+        });
+
+        function showSuccess() {
+            noBtn.classList.add('hidden');
+            document.getElementById('mainContent').classList.add('shifted');
+            document.getElementById('gifContainer').classList.add('visible');
+            document.getElementById('successMessage').classList.add('visible');
+
+            // Create confetti
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => createConfetti(), i * 50);
+            }
+
+            // Hide complicated overlay if open
+            document.getElementById('complicatedOverlay').classList.remove('visible');
+        }
+
+        function createConfetti() {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.left = Math.random() * 100 + '%';
+            confetti.style.background = ['#ff6b95', '#e75480', '#ff9a9e', '#ffd1d1', '#ffeef8'][Math.floor(Math.random() * 5)];
+            confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+            confetti.style.width = (5 + Math.random() * 10) + 'px';
+            confetti.style.height = (5 + Math.random() * 10) + 'px';
+            document.body.appendChild(confetti);
+
+            setTimeout(() => confetti.remove(), 3000);
+        }
+
+        // No button click - show complicated UI
+        noBtn.addEventListener('click', () => {
+            document.getElementById('complicatedOverlay').classList.add('visible');
+            initComplicatedUI();
+        });
+
+        // Complicated UI Logic
+        let currentStep = 1;
+        let mathAnswer;
+        let captchaCorrect = [];
+
+        function initComplicatedUI() {
+            currentStep = 1;
+            updateStepIndicator();
+            showStep(1);
+            initMathProblem();
+            initCaptcha();
+            initSliderPuzzle();
+        }
+
+        function updateStepIndicator() {
+            document.getElementById('stepIndicator').textContent = `Step ${currentStep} of 3`;
+        }
+
+        function showStep(step) {
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            document.getElementById(`step${step}`).classList.add('active');
+        }
+
+        // Step 1: Math Problem
+        function initMathProblem() {
+            const a = Math.floor(Math.random() * 50) + 50;
+            const b = Math.floor(Math.random() * 30) + 20;
+            const c = Math.floor(Math.random() * 10) + 5;
+            mathAnswer = a + b - c;
+            document.getElementById('mathQuestion').textContent = `${a} + ${b} - ${c} = ?`;
+            document.getElementById('mathAnswer').value = '';
+            document.getElementById('mathError').textContent = '';
+        }
+
+        function checkMath() {
+            const userAnswer = parseInt(document.getElementById('mathAnswer').value);
+            if (userAnswer === mathAnswer) {
+                currentStep = 2;
+                updateStepIndicator();
+                showStep(2);
+            } else {
+                document.getElementById('mathError').textContent = 'Wrong! Maybe just say Yes instead?';
+                initMathProblem(); // Generate new problem
+            }
+        }
+
+        // Step 2: Captcha
+        function initCaptcha() {
+            const grid = document.getElementById('captchaGrid');
+            grid.innerHTML = '';
+            captchaCorrect = [];
+
+            const hearts = ['❤️', '💔', '💖', '💔', '💗', '💔', '💝', '💘', '💔'];
+            const shuffled = hearts.sort(() => Math.random() - 0.5);
+
+            shuffled.forEach((heart, index) => {
+                const item = document.createElement('div');
+                item.className = 'captcha-item';
+                item.textContent = heart;
+                item.dataset.index = index;
+                item.dataset.broken = heart === '💔' ? 'true' : 'false';
+
+                if (heart === '💔') captchaCorrect.push(index);
+
+                item.addEventListener('click', () => {
+                    item.classList.toggle('selected');
+                });
+
+                grid.appendChild(item);
+            });
+        }
+
+        function checkCaptcha() {
+            const selected = [...document.querySelectorAll('.captcha-item.selected')]
+                .map(item => parseInt(item.dataset.index));
+
+            const isCorrect = captchaCorrect.length === selected.length &&
+                captchaCorrect.every(i => selected.includes(i));
+
+            if (isCorrect) {
+                currentStep = 3;
+                updateStepIndicator();
+                showStep(3);
+            } else {
+                document.getElementById('captchaError').textContent = 'Incorrect! Hearts are confusing, right? Just say Yes!';
+                initCaptcha();
+            }
+        }
+
+        // Step 3: Slider Puzzle
+        let puzzleState = [];
+
+        function initSliderPuzzle() {
+            puzzleState = [1, 2, 3, 4, 5, 6, 7, 8, 0];
+            // Shuffle
+            for (let i = 0; i < 100; i++) {
+                const emptyIndex = puzzleState.indexOf(0);
+                const moves = getValidMoves(emptyIndex);
+                const randomMove = moves[Math.floor(Math.random() * moves.length)];
+                [puzzleState[emptyIndex], puzzleState[randomMove]] = [puzzleState[randomMove], puzzleState[emptyIndex]];
+            }
+            renderPuzzle();
+        }
+
+        function getValidMoves(emptyIndex) {
+            const moves = [];
+            const row = Math.floor(emptyIndex / 3);
+            const col = emptyIndex % 3;
+
+            if (row > 0) moves.push(emptyIndex - 3);
+            if (row < 2) moves.push(emptyIndex + 3);
+            if (col > 0) moves.push(emptyIndex - 1);
+            if (col < 2) moves.push(emptyIndex + 1);
+
+            return moves;
+        }
+
+        function renderPuzzle() {
+            const puzzle = document.getElementById('sliderPuzzle');
+            puzzle.innerHTML = '';
+
+            puzzleState.forEach((num, index) => {
+                const tile = document.createElement('div');
+                tile.className = 'puzzle-tile' + (num === 0 ? ' empty' : '');
+                tile.textContent = num === 0 ? '' : num;
+                tile.dataset.index = index;
+
+                if (num !== 0) {
+                    tile.addEventListener('click', () => moveTile(index));
+                }
+
+                puzzle.appendChild(tile);
+            });
+        }
+
+        function moveTile(index) {
+            const emptyIndex = puzzleState.indexOf(0);
+            const validMoves = getValidMoves(emptyIndex);
+
+            if (validMoves.includes(index)) {
+                [puzzleState[emptyIndex], puzzleState[index]] = [puzzleState[index], puzzleState[emptyIndex]];
+                renderPuzzle();
+                checkPuzzleWin();
+            }
+        }
+
+        function checkPuzzleWin() {
+            const winning = [1, 2, 3, 4, 5, 6, 7, 8, 0];
+            if (puzzleState.every((val, i) => val === winning[i])) {
+                alert("Wow, you actually solved it! Fine, you can say No... but are you sure? 🥺");
+                // Close overlay
+                document.getElementById('complicatedOverlay').classList.remove('visible');
+            }
+        }
+
+        function giveUp() {
+            showSuccess();
+        }
+    </script>
+</body>
+</html>
